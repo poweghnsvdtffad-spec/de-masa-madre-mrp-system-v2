@@ -26,7 +26,7 @@ export const InventoryView = () => {
                             <th className="p-4 font-semibold text-slate-500 text-sm">Insumo</th>
                             <th className="p-4 font-semibold text-slate-500 text-sm">Stock Actual</th>
                             <th className="p-4 font-semibold text-slate-500 text-sm">Mínimo</th>
-                            <th className="p-4 font-semibold text-slate-500 text-sm text-right">Estado</th>
+                            <th className="p-4 font-semibold text-slate-500 text-sm text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -48,7 +48,7 @@ export const InventoryView = () => {
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            className={`w-24 p-2 border rounded font-bold ${(res.stock <= (res.safety_stock || 0)) ? 'text-red-600 border-red-200 bg-red-50' : 'text-slate-700 border-slate-200'}`}
+                                            className={`w-20 p-1 border rounded font-bold ${(res.stock <= (res.safety_stock || 0)) ? 'text-red-600 border-red-200 bg-red-50' : 'text-slate-700 border-slate-200'}`}
                                             value={res.stock}
                                             step="0.1"
                                             onChange={(e) => updateResource(res.id, { stock: parseFloat(e.target.value) || 0 })}
@@ -60,7 +60,7 @@ export const InventoryView = () => {
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            className="w-20 p-2 border border-slate-200 rounded text-slate-500 text-sm font-medium"
+                                            className="w-16 p-1 border border-slate-200 rounded text-slate-500 text-sm"
                                             value={res.safety_stock}
                                             onChange={(e) => updateResource(res.id, { safety_stock: parseInt(e.target.value) || 0 })}
                                         />
