@@ -30,7 +30,7 @@ export function AssistantWidget() {
             let responseText = "";
 
             // 1. Integration Guides
-            if (query.includes('whatsapp') || query.includes('celular') || query.includes('mensaje')) {
+            if (query.includes('whatsapp') || query.includes('wsp') || query.includes('whats') || query.includes('celular') || query.includes('mensaje')) {
                 responseText = "📱 **Conexión con WhatsApp Business**:\n1. Asegurate de tener instalada la app de WA Business.\n2. En la sección 'Pedidos', usá el botón 'Importar' (muy pronto disponible) para leer los mensajes automáticamente.\n3. Por ahora, podés copiar y pegar los pedidos directamente en 'Nuevo Pedido' y el sistema reconocerá el formato.";
             } else if (query.includes('sheets') || query.includes('excel') || query.includes('google') || query.includes('hoja')) {
                 responseText = "📊 **Conexión con Google Sheets**:\n1. Tu planilla debe tener las solapas: 'Productos', 'Recetas' e 'Insumos'.\n2. Las columnas deben respetar los nombres exactos (ID, Nombre, Unidad, Stock).\n3. Pasame el Link de tu planilla por acá y yo te ayudo a vincularla al código.";
