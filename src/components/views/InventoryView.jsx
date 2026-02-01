@@ -1,44 +1,80 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useApp } from '../../store/AppContext';
-import { Package, TrendingDown } from 'lucide-react';
+import { Package, Edit2, Save, X } from 'lucide-react';
+import '../../styles/layout.css';
 
-export function InventoryView() {
-    const { resources } = useApp();
+export const InventoryView = () => {
+    const { resources, updateResource } = useApp();
 
     return (
-        <div className="inventory-view">
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '2rem' }}>Inventario</h1>
+        <div>
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-slate-900">Inventario</h2>
+                    <p className="text-slate-500">Gestión de materias primas.</p>
+                </div>
+                <button className="btn-primary">
+                    + Nuevo Insumo
+                </button>
+            </div>
 
-            <div className="card-premium">
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr style={{ textAlign: 'left', color: '#64748b', fontSize: '0.875rem' }}>
-                            <th style={{ padding: '1rem' }}>Insumo</th>
-                            <th style={{ padding: '1rem' }}>Stock Actual</th>
-                            <th style={{ padding: '1rem' }}>Mínimo</th>
-                            <th style={{ padding: '1rem' }}>Estado</th>
+                        <tr className="border-b border-slate-100 bg-slate-50/50">
+                            <th className="p-4 font-semibold text-slate-500 text-sm">Insumo</th>
+                            <th className="p-4 font-semibold text-slate-500 text-sm">Stock Actual</th>
+                            <th className="p-4 font-semibold text-slate-500 text-sm">Mínimo</th>
+                            <th className="p-4 font-semibold text-slate-500 text-sm text-right">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {resources.map(res => (
-                            <tr key={res.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                                <td style={{ padding: '1rem', fontWeight: 600 }}>{res.name}</td>
-                                <td style={{ padding: '1rem' }}>{res.stock} {res.unit}</td>
-                                <td style={{ padding: '1rem', color: '#64748b' }}>{res.min} {res.unit}</td>
-                                <td style={{ padding: '1rem' }}>
-                                    {res.stock <= res.min ? (
-                                        <span style={{ color: '#e11d48', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem' }}>
-                                            <TrendingDown size={14} /> Reponer
-                                        </span>
-                                    ) : (
-                                        <span style={{ color: '#15803d', fontSize: '0.875rem' }}>OK</span>
-                                    )}
+                        {resources.map((res, idx) => (
+                            <motion.tr
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                key={res.id}
+                                className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                            >
+                                <td className="p-4 font-medium text-slate-900 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                        <Package size={16} />
+                                    </div>
+                                    {res.name}
                                 </td>
-                            </tr>
+                                <td className="p-4">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            className={`w-24 p-2 border rounded font-bold ${(res.stock <= (res.safety_stock || 0)) ? 'text-red-600 border-red-200 bg-red-50' : 'text-slate-700 border-slate-200'}`}
+                                            value={res.stock}
+                                            step="0.1"
+                                            onChange={(e) => updateResource(res.id, { stock: parseFloat(e.target.value) || 0 })}
+                                        />
+                                        <span className="text-xs text-slate-500">{res.unit}</span>
+                                    </div>
+                                </td>
+                                <td className="p-4">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            className="w-20 p-2 border border-slate-200 rounded text-slate-500 text-sm font-medium"
+                                            value={res.safety_stock}
+                                            onChange={(e) => updateResource(res.id, { safety_stock: parseInt(e.target.value) || 0 })}
+                                        />
+                                        <span className="text-xs text-slate-400">{res.unit}</span>
+                                    </div>
+                                </td>
+                                <td className="p-4 text-right">
+                                    <div className="text-xs text-slate-400 font-medium">Auto-guardado</div>
+                                </td>
+                            </motion.tr>
                         ))}
                     </tbody>
                 </table>
             </div>
         </div>
     );
-}
+};

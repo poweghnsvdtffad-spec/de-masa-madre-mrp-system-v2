@@ -1,42 +1,51 @@
-import React, { useState } from 'react';
-import { MessageSquare, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Send, X, Bot } from 'lucide-react';
+import '../../styles/layout.css';
 
 const MOCK_RESPONSES = [
-    { keywords: ['cuanto', 'harina', 'queda'], text: "Quedan **45kg** de Harina de Fuerza. Con eso podés hacer unas 90 hogazas." },
-    { keywords: ['hola', 'quien', 'sos'], text: "Soy el asistente de **De Masa Madre**. Te ayudo a calcular cuánto producir y qué insumos necesitás." },
-    { keywords: ['pedido', 'nuevo', 'como'], text: "Andá a la pestaña 'Pedidos' y dale al botón 'Nuevo Pedido' para registrarlo." },
+    { keywords: ['hola', 'buen', 'dia'], text: "¡Hola! Soy tu asistente de Masa Madre. ¿En qué puedo ayudarte hoy? Podés preguntarme por stock, pedidos o producción." },
+    { keywords: ['pedido', 'cargar', 'nuevo'], text: "Para cargar un nuevo pedido, andá a la sección 'Pedidos' y tocá el botón 'Nuevo Pedido'. Acordate que podés elegir varios productos a la vez." },
+    { keywords: ['stock', 'rojo', 'alerta', 'faltante', 'comprar', 'donde'], text: "Si ves una alerta roja, significa que estás por debajo del stock mínimo. Podés ver cuánto te falta en la pestaña de **'Inventario'**; ahí podés ajustar las cantidades directamente en la tabla." },
+    { keywords: ['critico', 'minimo', 'seguridad', 'ajustar', 'configurar', 'nivel'], text: "Para configurar tus alertas, andá a **'Inventario'** y cambiá el número en la columna **'Mínimo'**. Si el stock baja de ese número, verás automáticamente una alerta roja en el Dashboard." },
+    { keywords: ['produccion', 'plan', 'empezar'], text: "En la vista de 'Producción' ves todo lo que tenés que cocinar hoy. Al darle 'Iniciar', los pedidos pasan a estado 'En Producción' y se descuenta el stock teórico." },
+    { keywords: ['borrar', 'eliminar', 'cancelar'], text: "Por seguridad, para borrar un pedido tenés que contactar al administrador o hacerlo desde la base de datos por ahora." },
 ];
 
-export function AssistantWidget() {
+export const AssistantWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { id: 1, type: 'bot', text: "¡Hola! Soy tu asistente inteligente. ¿En qué te ayudo hoy?" }
+        { id: 1, type: 'bot', text: 'Hola 👋 Soy el asistente del sistema. ¿Tenés alguna duda sobre cómo manejar tu stock o tus pedidos?' }
     ]);
     const [inputValue, setInputValue] = useState('');
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, isOpen]);
 
     const handleSend = (e) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
 
-        // Add user message
         const userMsg = { id: Date.now(), type: 'user', text: inputValue };
         setMessages(prev => [...prev, userMsg]);
         const query = inputValue.toLowerCase();
         setInputValue('');
 
-        // Simulate AI thinking delay
         setTimeout(() => {
             let responseText = "";
 
-            // 1. Integration Guides
             if (query.includes('whatsapp') || query.includes('wsp') || query.includes('whats') || query.includes('celular') || query.includes('mensaje')) {
-                responseText = "📱 **Conexión con WhatsApp Business**:\n1. Asegurate de tener instalada la app de WA Business.\n2. En la sección 'Pedidos', usá el botón 'Importar' (muy pronto disponible) para leer los mensajes automáticamente.\n3. Por ahora, podés copiar y pegar los pedidos directamente en 'Nuevo Pedido' y el sistema reconocerá el formato.";
+                responseText = "📱 **Conexión con WhatsApp**:\n¡El sistema ya está listo para trabajar con WhatsApp!\n1. En **'Pedidos'**, tenés el botón **'Importar'** para reconocer mensajes pegados.\n2. Si configurás la API oficial (Backend), los pedidos entrarán automáticamente a la cola de revisión.";
             } else if (query.includes('sheets') || query.includes('excel') || query.includes('google') || query.includes('hoja')) {
-                responseText = "📊 **Conexión con Google Sheets**:\n1. Tu planilla debe tener las solapas: 'Productos', 'Recetas' e 'Insumos'.\n2. Las columnas deben respetar los nombres exactos (ID, Nombre, Unidad, Stock).\n3. Pasame el Link de tu planilla por acá y yo te ayudo a vincularla al código.";
+                responseText = "📊 **Conexión con Google Sheets**:\nPodés vincular tu planilla para que los productos y recetas se carguen solos.\n1. Prepará tu Excel con solapas para 'Productos', 'Recetas' e 'Insumos'.\n2. Pasame el link por acá y te ayudo a integrarlo al código del conector.";
             }
 
-            // 2. Keyword matching for other things
             if (!responseText) {
                 const match = MOCK_RESPONSES.find(r => r.keywords.some(k => query.includes(k)));
                 if (match) {
@@ -44,9 +53,8 @@ export function AssistantWidget() {
                 }
             }
 
-            // 3. Fallback
             if (!responseText) {
-                responseText = "No estoy seguro de cómo responder eso. Por favor contactá al desarrollador (Antigravity) para soporte técnico avanzado.";
+                responseText = "No estoy seguro de cómo responder eso. Para configurar stock crítico o ajustar inventario, te recomiendo ir directo a la pestaña de 'Inventario'.";
             }
 
             setMessages(prev => [...prev, { id: Date.now() + 1, type: 'bot', text: responseText }]);
@@ -54,74 +62,65 @@ export function AssistantWidget() {
     };
 
     return (
-        <div className="assistant-container" style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 1000 }}>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        style={{
-                            width: '350px',
-                            height: '500px',
-                            background: 'white',
-                            borderRadius: '20px',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            marginBottom: '1rem'
-                        }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        className="bg-white rounded-2xl shadow-xl w-80 sm:w-96 border border-slate-200 overflow-hidden flex flex-col"
+                        style={{ maxHeight: '500px', height: '60vh' }}
                     >
-                        <div style={{ background: 'var(--primary-gradient)', padding: '1.25rem', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ fontWeight: 700 }}>Asistente Inteligente</span>
-                            <X size={20} cursor="pointer" onClick={() => setIsOpen(false)} />
-                        </div>
-                        
-                        <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {messages.map(msg => (
-                                <div key={msg.id} style={{ 
-                                    alignSelf: msg.type === 'bot' ? 'flex-start' : 'flex-end',
-                                    background: msg.type === 'bot' ? '#f1f5f9' : 'var(--rose-600)',
-                                    color: msg.type === 'bot' ? '#334155' : 'white',
-                                    padding: '0.75rem 1rem',
-                                    borderRadius: '15px',
-                                    maxWidth: '85%',
-                                    fontSize: '0.875rem',
-                                    whiteSpace: 'pre-wrap'
-                                }}>
-                                    {msg.text}
-                                </div>
-                            ))}
+                        <div className="bg-slate-900 p-4 flex justify-between items-center text-white">
+                            <div className="flex items-center gap-2">
+                                <Bot size={20} className="text-emerald-400" />
+                                <span className="font-semibold text-sm">Asistente Virtual</span>
+                            </div>
+                            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
+                                <X size={18} />
+                            </button>
                         </div>
 
-                        <form onSubmit={handleSend} style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
-                            <input 
+                        <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4">
+                            {messages.map((msg) => (
+                                <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed
+                                        ${msg.type === 'user' ? 'bg-rose-600 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none shadow-sm'}`}>
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Escribí tu consulta..."
+                                className="flex-1 text-sm p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-rose-500"
                                 value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Escribí tu duda..."
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem 1rem',
-                                    border: '1px solid #e2e8f0',
-                                    borderRadius: '10px',
-                                    outline: 'none'
-                                }}
+                                onChange={e => setInputValue(e.target.value)}
                             />
+                            <button type="submit" disabled={!inputValue.trim()} className="p-2 bg-slate-900 text-white rounded-lg disabled:opacity-50 hover:bg-slate-800 transition-colors">
+                                <Send size={18} />
+                            </button>
                         </form>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <button 
-                className="btn-premium" 
-                style={{ width: '60px', height: '60px', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
+                className="h-16 w-16 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl flex items-center justify-center border-2 border-white/20 relative group overflow-hidden"
             >
-                <div style={{ background: 'var(--primary-gradient)', p: 4, rounded: 'full' }}>
-                   <MessageSquare size={28} />
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10">
+                    {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
                 </div>
-            </button>
+            </motion.button>
         </div>
     );
-}
+};
